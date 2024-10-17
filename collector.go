@@ -2,8 +2,8 @@
 package main
 
 import (
-    "encoding/json"
-    "net/http"
+    //"encoding/json"
+    //"net/http"
     "sync"
 
     "github.com/prometheus/client_golang/prometheus"
@@ -45,17 +45,16 @@ func (c *DataCollector) Collect(ch chan<- prometheus.Metric) {
     //     return
     // }
     // defer resp.Body.Close()
-	var result map[string]interface{}
-	result = {
-		"project": "g04",
-		"value": 10.12
-	}
 
     // 解析 JSON 数据
-    var result map[string]interface{}
-    if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
-        log.Printf("Error decoding JSON: %v", err)
-        return
+    //var result map[string]interface{}
+    //if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+    //    log.Printf("Error decoding JSON: %v", err)
+    //    return
+    //}
+    result := map[string]interface{}{
+        "project": "g04",
+        "value":   10.12,
     }
 
     // 假设我们从 JSON 中提取出一个状态值并更新 Gauge 指标

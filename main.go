@@ -1,28 +1,27 @@
 package main
 
 import (
-	"log"
+    "log"
     "net/http"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
 
-	// "live-supplier-exporter/collector"
+    "github.com/prometheus/client_golang/prometheus"
+    "github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 
 func main() {
 
     // Health check
-	http.HandleFunc("/ping", func(w http.ResponseWriter, r *http.Request){
-		log.Printf("Return: %v", w)
-	})
+    http.HandleFunc("/ping", func(w http.ResponseWriter, r *http.Request){
+        log.Printf("Return: %v", w)
+    })
 
     // register metrics collector
-    c := collector.NewDataCollector()
+    c := NewDataCollector()
     prometheus.MustRegister(c)
 
-	// metrics api
+    // metrics api
     http.Handle("/metrics", promhttp.Handler())
-
 
     // Run server
     log.Println("Starting server on :9097")
