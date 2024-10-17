@@ -13,7 +13,7 @@ func main() {
 
     // Health check
     http.HandleFunc("/ping", func(w http.ResponseWriter, r *http.Request){
-        log.Printf("Return: %v", w)
+        log.Println("live-supplier-exporter is health.")
     })
 
     // register metrics collector

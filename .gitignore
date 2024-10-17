@@ -26,3 +26,4 @@ go.work.sum
 
 *.log
 *.tmp
+live-supplier-exporter
