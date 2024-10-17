@@ -1,4 +1,5 @@
-package collector
+// package collector
+package main
 
 import (
     "encoding/json"
@@ -37,13 +38,18 @@ func (c *DataCollector) Collect(ch chan<- prometheus.Metric) {
     c.mu.Lock()
     defer c.mu.Unlock()
 
-    // 从第三方接口获取数据
-    resp, err := http.Get("https://api.example.com/data")
-    if err != nil {
-        log.Printf("Error fetching data: %v", err)
-        return
-    }
-    defer resp.Body.Close()
+    // // 从第三方接口获取数据
+    // resp, err := http.Get("https://api.example.com/data")
+    // if err != nil {
+    //     log.Printf("Error fetching data: %v", err)
+    //     return
+    // }
+    // defer resp.Body.Close()
+	var result map[string]interface{}
+	result = {
+		"project": "g04",
+		"value": 10.12
+	}
 
     // 解析 JSON 数据
     var result map[string]interface{}
@@ -53,10 +59,10 @@ func (c *DataCollector) Collect(ch chan<- prometheus.Metric) {
     }
 
     // 假设我们从 JSON 中提取出一个状态值并更新 Gauge 指标
-    status := result["status"].(string)
+    project := result["project"].(string)
     value := result["value"].(float64)
 
-    c.gaugeMetric.WithLabelValues(status).Set(value)
+    c.gaugeMetric.WithLabelValues(project).Set(value)
 
     // 将指标发送到通道中
     c.gaugeMetric.Collect(ch)

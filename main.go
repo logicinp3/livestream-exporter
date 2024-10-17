@@ -3,8 +3,7 @@ package main
 import (
 	"log"
     "net/http"
-
-	// "github.com/prometheus/client_golang/prometheus/promhttp"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 
 	// "live-supplier-exporter/collector"
 )
@@ -17,10 +16,12 @@ func main() {
 		log.Printf("Return: %v", w)
 	})
 
-    // // metrics 接口
-    // c := collector.NewDataCollector()
-    // prometheus.MustRegister(c)
-    // http.Handle("/metrics", promhttp.Handler())
+    // register metrics collector
+    c := collector.NewDataCollector()
+    prometheus.MustRegister(c)
+
+	// metrics api
+    http.Handle("/metrics", promhttp.Handler())
 
 
     // Run server
