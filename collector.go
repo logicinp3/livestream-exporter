@@ -28,14 +28,14 @@ func NewLiveCollector() *LiveCollector {
                 Name: "live_streaming_quality_metric_framerate",
                 Help: "framerate data",
             },
-            []string{"supplier", "project"},
+            []string{"supplier", "project"}
         ),
         bitMetric: prometheus.NewGaugeVec(
             prometheus.GaugeOpts{
                 Name: "live_streaming_quality_metric_bitrate",
                 Help: "bitrate data",
             },
-            []string{"supplier", "project"},
+            []string{"supplier", "project"}
         ),
     }
 }
