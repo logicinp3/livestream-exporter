@@ -17,19 +17,25 @@ type LiveCollector struct {
 
 // Init a Collector，for register
 func NewLiveCollector() *LiveCollector {
+    // Metrics Label
+    //
+    // @supplier: "hw" "tx"
+    // @project: "g04" "g13" "g16" "g18" "g20" "g23"
+    //
     return &LiveCollector{
-        gaugeMetric: prometheus.NewGaugeVec(
+        frameMetric: prometheus.NewGaugeVec(
             prometheus.GaugeOpts{
-                Name: "live_streaming_quality_metric",
-                Help: "Gauge metric for data from supplier API",
+                Name: "live_streaming_quality_metric_framerate",
+                Help: "framerate data",
             },
-            // Metrics Label
-            //
-            // @supplier: "hw" "tx"
-            // @project: "g04" "g13" "g16" "g18" "g20" "g23"
-            // @metrics_type: "framerate" "bitrate"
-            //
-            []string{"supplier", "project", "metrics_type"},
+            []string{"supplier", "project"},
+        ),
+        bitMetric: prometheus.NewGaugeVec(
+            prometheus.GaugeOpts{
+                Name: "live_streaming_quality_metric_bitrate",
+                Help: "bitrate data",
+            },
+            []string{"supplier", "project"},
         ),
     }
 }
