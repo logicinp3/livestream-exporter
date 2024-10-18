@@ -16,11 +16,11 @@ func main() {
         log.Println("live-supplier-exporter is health.")
     })
 
-    // register metrics collector
-    c := NewDataCollector()
-    prometheus.MustRegister(c)
+    // Register metrics collector
+    liveCollector := NewLiveCollector()
+    prometheus.MustRegister(liveCollector)
 
-    // metrics api
+    // Metrics api
     http.Handle("/metrics", promhttp.Handler())
 
     // Run server

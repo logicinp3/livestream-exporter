@@ -1,68 +1,69 @@
-// package collector
 package main
 
 import (
-    //"encoding/json"
-    //"net/http"
     "sync"
 
     "github.com/prometheus/client_golang/prometheus"
+
+    "live-supplier-exporter/utils"
 )
 
-// 定义用于存储指标的结构体
-type DataCollector struct {
-    mu          sync.Mutex
-    gaugeMetric *prometheus.GaugeVec
+// Define LiveCollector Structure
+type LiveCollector struct {
+    mu              sync.Mutex
+    frameMetric     *prometheus.GaugeVec
+    bitMetric       *prometheus.GaugeVec
 }
 
-// 创建新的数据收集器
-func NewDataCollector() *DataCollector {
-    return &DataCollector{
+// Init a Collector，for register
+func NewLiveCollector() *LiveCollector {
+    return &LiveCollector{
         gaugeMetric: prometheus.NewGaugeVec(
             prometheus.GaugeOpts{
-                Name: "third_party_data_metric",
-                Help: "Gauge metric for data from third party API",
+                Name: "live_streaming_quality_metric",
+                Help: "Gauge metric for data from supplier API",
             },
-            []string{"status"},
+            // Metrics Label
+            //
+            // @supplier: "hw" "tx"
+            // @project: "g04" "g13" "g16" "g18" "g20" "g23"
+            // @metrics_type: "framerate" "bitrate"
+            //
+            []string{"supplier", "project", "metrics_type"},
         ),
     }
 }
 
 // Describe 方法用于描述指标
-func (c *DataCollector) Describe(ch chan<- *prometheus.Desc) {
-    c.gaugeMetric.Describe(ch)
+func (c *LiveCollector) Describe(ch chan<- *prometheus.Desc) {
+    c.frameMetric.Describe(ch)
+    c.bitMetric.Describe(ch)
 }
 
 // Collect 方法用于收集数据并更新指标值
-func (c *DataCollector) Collect(ch chan<- prometheus.Metric) {
+func (c *LiveCollector) Collect(ch chan<- prometheus.Metric) {
     c.mu.Lock()
     defer c.mu.Unlock()
 
-    // // 从第三方接口获取数据
-    // resp, err := http.Get("https://api.example.com/data")
-    // if err != nil {
-    //     log.Printf("Error fetching data: %v", err)
-    //     return
-    // }
-    // defer resp.Body.Close()
+    // 获取华为云 live 数据
+    utils.HwAPI
 
-    // 解析 JSON 数据
-    //var result map[string]interface{}
-    //if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
-    //    log.Printf("Error decoding JSON: %v", err)
-    //    return
-    //}
+    // 获取腾讯云 live 数据
+    utils.TcAPI
+
+    // 解析数据
     result := map[string]interface{}{
         "project": "g04",
         "value":   10.12,
     }
-
-    // 假设我们从 JSON 中提取出一个状态值并更新 Gauge 指标
     project := result["project"].(string)
     value := result["value"].(float64)
 
-    c.gaugeMetric.WithLabelValues(project).Set(value)
+    // 写入指标
+    c.frameMetric.WithLabelValues(project).Set(value)
+    c.bitMetric.WithLabelValues(project).Set(value)
 
     // 将指标发送到通道中
-    c.gaugeMetric.Collect(ch)
+    c.frameMetric.Collect(ch)
+    c.bitMetric.Collect(ch)
 }
