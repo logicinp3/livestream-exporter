@@ -24,6 +24,7 @@ go.work.sum
 # env file
 .env
 
-*.log
+# custom
 *.tmp
-live-supplier-exporter
+tmp.go
+config/config.yaml
