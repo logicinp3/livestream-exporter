@@ -1,6 +1,11 @@
 package utils
 
-function HwAPI(){
+import (
+    "fmt"
+)
+
+func HaiweiAPI(){
+    fmt.Println("in haiwei api")
     // resp, err := http.Get("https://api.example.com/data")
     // if err != nil {
     //     log.Printf("Error fetching data: %v", err)

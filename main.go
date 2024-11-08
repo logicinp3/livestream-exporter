@@ -19,13 +19,12 @@ func main() {
     // Register metrics collector
     liveCollector := NewLiveCollector()
     prometheus.MustRegister(liveCollector)
-
     // Metrics api
     http.Handle("/metrics", promhttp.Handler())
 
     // Run server
-    log.Println("Starting server on :9097")
-    if err := http.ListenAndServe(":9097", nil); err != nil {
+    log.Println("Starting server on :8080")
+    if err := http.ListenAndServe(":8080", nil); err != nil {
         log.Fatalf("Error starting server: %v", err)
     }
 }

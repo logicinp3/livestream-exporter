@@ -28,14 +28,14 @@ func NewLiveCollector() *LiveCollector {
                 Name: "live_streaming_quality_metric_framerate",
                 Help: "framerate data",
             },
-            []string{"supplier", "project"}
+            []string{"supplier", "project"},
         ),
         bitMetric: prometheus.NewGaugeVec(
             prometheus.GaugeOpts{
                 Name: "live_streaming_quality_metric_bitrate",
                 Help: "bitrate data",
             },
-            []string{"supplier", "project"}
+            []string{"supplier", "project"},
         ),
     }
 }
@@ -52,10 +52,10 @@ func (c *LiveCollector) Collect(ch chan<- prometheus.Metric) {
     defer c.mu.Unlock()
 
     // 获取华为云 live 数据
-    utils.HwAPI
+    utils.HaiweiAPI()
 
     // 获取腾讯云 live 数据
-    utils.TcAPI
+    utils.TencentAPI()
 
     // 解析数据
     result := map[string]interface{}{
