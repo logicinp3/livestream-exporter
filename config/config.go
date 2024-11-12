@@ -7,53 +7,59 @@ import (
     "github.com/spf13/viper"
 )
 
-type HwAuthConfig struct {
-    HUAWEICLOUD_SDK_AK string  `mapstructure:"ak"`
-    HUAWEICLOUD_SDK_SK string  `mapstructure:"sk"`
+
+type Credentials struct {
+    AK string `mapstructure:"ak"`
+    SK string `mapstructure:"sk"`
 }
 
-type TcAuthConfig struct {
-    TENCENTCLOUD_SDK_AK string  `mapstructure:"ak"`
-    TENCENTCLOUD_SDK_SK string  `mapstructure:"sk"`
+type Provider struct {
+    G04 Credentials `mapstructure:"g04"`
+    G13 Credentials `mapstructure:"g13"`
 }
 
 type Config struct {
-    Haiwei struct {
-        G04 HwAuthConfig  `mapstructure:"g04"`
-        G13 HwAuthConfig  `mapstructure:"g13"`
-    } `mapstructure:haiwei`
+    Haiwei  Provider `mapstructure:"haiwei"`
 
-    Tencent struct {
-        G04 TcAuthConfig  `mapstructure:"g04"`
-        G13 TcAuthConfig  `mapstructure:"g13"`
-    } `mapstructure:tencent`
+    Tencent Provider `mapstructure:"tencent"`
 }
 
 var AppConfig Config
 
-//func init() {
-func LoadConfig() {
+// Loads configuration from the config file and sets defaults.
+func LoadConfig() error {
     // Setting config file
     viper.SetConfigFile("./config/config.yaml")
 
-    // Read config to viper
-    err := viper.ReadInConfig()
-    if err != nil {
-        panic(err)
+    // Setting default variable
+    viper.SetDefault("default-key", "default-var")
+
+    // Bind environment variable
+    //viper.BindEnv("redis.port", "REDIS_PORT")
+    viper.AutomaticEnv()
+
+    // Read config file
+    if err := viper.ReadInConfig(); err != nil {
+        return fmt.Errorf("Error reading config file: %s", err)
     }
 
+    // Unmarshal config file
+    if err := viper.Unmarshal(&AppConfig); err != nil {
+        return fmt.Errorf("Unable to decode into struct Config: %v", err)
+    }
 
-    // Get config
-    //a := viper.Get("haiwei.0.g04.ak")
-    //fmt.Println(a)
-    return viper.Unmarshal(&AppConfig)
+    return nil
 }
 
-func init() {
-    // Dynamic watch config
+// Watches for changes and return new context.
+func WatchConfig() {
     viper.WatchConfig()
-    viper.OnConfigChange(func(e fsnotiff
-
-    viper.SetDefault("default-key", "default-var")
-    viper.AutomaticEnv()
+    viper.OnConfigChange(func(e fsnotify.Event) {
+        fmt.Println("Config file changed: ", e.Name)
+        if err := viper.Unmarshal(&AppConfig); err != nil {
+            fmt.Printf("Unable to decode into struct Config: %v\n", err)
+        }
+        fmt.Println("Updated config:", AppConfig)
+    })
 }
+

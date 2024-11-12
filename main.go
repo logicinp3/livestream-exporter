@@ -6,10 +6,23 @@ import (
 
     "github.com/prometheus/client_golang/prometheus"
     "github.com/prometheus/client_golang/prometheus/promhttp"
+
+    "live-supplier-exporter/config"
 )
 
 
 func main() {
+    // Loads config file
+    if err := config.LoadConfig(); err != nil {
+	log.Fatalf("Error loading config: %s", err)
+    }
+
+    // Goroutine for watches config file
+    go config.WatchConfig()
+
+    // Get config
+    log.Printf("haiwei config: %s\n", config.AppConfig.Haiwei)
+
 
     // Health check
     http.HandleFunc("/ping", func(w http.ResponseWriter, r *http.Request){
