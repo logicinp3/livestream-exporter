@@ -2,12 +2,14 @@ package main
 
 import (
     "log"
+    "encoding/json"
     "net/http"
 
     "github.com/prometheus/client_golang/prometheus"
     "github.com/prometheus/client_golang/prometheus/promhttp"
 
     "live-supplier-exporter/config"
+    "live-supplier-exporter/utils"
 )
 
 
@@ -21,16 +23,19 @@ func main() {
     go config.WatchConfig()
 
     // Get config
-    log.Printf("haiwei config: %s\n", config.AppConfig.Haiwei)
-
+    log.Printf("config contenxt: %s\n", config.AppConfig)
 
     // Health check
     http.HandleFunc("/ping", func(w http.ResponseWriter, r *http.Request){
-        log.Println("live-supplier-exporter is health.")
+        //log.Println("live-supplier-exporter is health.")
+
+        w.Header().Set("Content-Type", "application/json")
+        response := map[string]bool{"up": true}
+        json.NewEncoder(w).Encode(response)
     })
 
     // Register metrics collector
-    liveCollector := NewLiveCollector()
+    liveCollector := utils.NewLiveCollector()
     prometheus.MustRegister(liveCollector)
     // Metrics api
     http.Handle("/metrics", promhttp.Handler())

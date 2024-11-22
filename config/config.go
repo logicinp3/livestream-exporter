@@ -59,7 +59,7 @@ func WatchConfig() {
         if err := viper.Unmarshal(&AppConfig); err != nil {
             fmt.Printf("Unable to decode into struct Config: %v\n", err)
         }
-        fmt.Println("Updated config:", AppConfig)
+        //fmt.Println("Updated config:", AppConfig)
     })
 }
 

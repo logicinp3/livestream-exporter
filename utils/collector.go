@@ -1,11 +1,9 @@
-package main
+package utils
 
 import (
     "sync"
 
     "github.com/prometheus/client_golang/prometheus"
-
-    "live-supplier-exporter/utils"
 )
 
 // Define LiveCollector Structure
@@ -52,10 +50,10 @@ func (c *LiveCollector) Collect(ch chan<- prometheus.Metric) {
     defer c.mu.Unlock()
 
     // 获取华为云 live 数据
-    utils.HaiweiAPI()
+    HaiweiAPI()
 
     // 获取腾讯云 live 数据
-    utils.TencentAPI()
+    TencentAPI()
 
     // 解析数据
     result := map[string]interface{}{
