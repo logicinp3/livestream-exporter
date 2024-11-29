@@ -9,8 +9,8 @@ import (
 // Define LiveCollector Structure
 type LiveCollector struct {
     mu              sync.Mutex
-    frameMetric     *prometheus.GaugeVec
-    bitMetric       *prometheus.GaugeVec
+    framerateMetric     *prometheus.GaugeVec
+    bitrateMetric       *prometheus.GaugeVec
 }
 
 // Init a Collector，for register
@@ -18,36 +18,42 @@ func NewLiveCollector() *LiveCollector {
     // Metrics Label
     //
     // @supplier: "hw" "tx"
-    // @project: "g04" "g13" "g16" "g18" "g20" "g23"
+    // @project: "g04" "g13" "g16" "g20" "g23" "g31"
     //
     return &LiveCollector{
-        frameMetric: prometheus.NewGaugeVec(
+        framerateMetric: prometheus.NewGaugeVec(
             prometheus.GaugeOpts{
-                Name: "live_streaming_quality_metric_framerate",
-                Help: "framerate data",
+                Name: "livestreaming_framerate",
+                Help: "CloudPlatform framerate metrics",
             },
-            []string{"supplier", "project"},
+            []string{
+                "supplier", 
+                "project",
+            },
         ),
-        bitMetric: prometheus.NewGaugeVec(
+        bitrateMetric: prometheus.NewGaugeVec(
             prometheus.GaugeOpts{
-                Name: "live_streaming_quality_metric_bitrate",
-                Help: "bitrate data",
+                Name: "livestreaming_bitrate",
+                Help: "CloudPlatform bitrate metrics",
             },
-            []string{"supplier", "project"},
+            []string{
+                "supplier",
+                "project",
+            },
         ),
     }
 }
 
 // Describe 方法用于描述指标
-func (c *LiveCollector) Describe(ch chan<- *prometheus.Desc) {
-    c.frameMetric.Describe(ch)
-    c.bitMetric.Describe(ch)
+func (l *LiveCollector) Describe(ch chan<- *prometheus.Desc) {
+    l.framerateMetric.Describe(ch)
+    l.bitrateMetric.Describe(ch)
 }
 
 // Collect 方法用于收集数据并更新指标值
-func (c *LiveCollector) Collect(ch chan<- prometheus.Metric) {
-    c.mu.Lock()
-    defer c.mu.Unlock()
+func (l *LiveCollector) Collect(ch chan<- prometheus.Metric) {
+    l.mu.Lock()
+    defer l.mu.Unlock()
 
     // 获取华为云 live 数据
     HaiweiAPI()
@@ -55,19 +61,25 @@ func (c *LiveCollector) Collect(ch chan<- prometheus.Metric) {
     // 获取腾讯云 live 数据
     TencentAPI()
 
-    // 解析数据
-    result := map[string]interface{}{
-        "project": "g04",
-        "value":   10.12,
+    // 模拟获取数据（可以根据实际场景替换为真实数据来源）
+    data := []struct {
+        supplier string
+        project  string
+        framerate float64
+        bitrate   float64
+    }{
+        {"hw", "g31", 30.0, 10.11},
+        {"tc", "g13", 40.0, 20.11},
+        {"tc", "g20", 28.5, 12.34},
     }
-    project := result["project"].(string)
-    value := result["value"].(float64)
 
-    // 写入指标
-    c.frameMetric.WithLabelValues(project).Set(value)
-    c.bitMetric.WithLabelValues(project).Set(value)
+    // 动态设置每个 supplier 和 project 标签的指标数据
+    for _, entry := range data {
+        l.framerateMetric.WithLabelValues(entry.supplier, entry.project).Set(entry.framerate)
+        l.bitrateMetric.WithLabelValues(entry.supplier, entry.project).Set(entry.bitrate)
+    }
 
     // 将指标发送到通道中
-    c.frameMetric.Collect(ch)
-    c.bitMetric.Collect(ch)
+    l.framerateMetric.Collect(ch)
+    l.bitrateMetric.Collect(ch)
 }
