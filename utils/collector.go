@@ -17,7 +17,7 @@ type LiveCollector struct {
 func NewLiveCollector() *LiveCollector {
     // Metrics Label
     //
-    // @supplier: "hw" "tx"
+    // @supplier: "hw" "tc"
     // @project: "g04" "g13" "g16" "g20" "g23" "g31"
     //
     return &LiveCollector{
@@ -55,11 +55,12 @@ func (l *LiveCollector) Collect(ch chan<- prometheus.Metric) {
     l.mu.Lock()
     defer l.mu.Unlock()
 
-    // 获取华为云 live 数据
-    HaiweiAPI()
+    // 获取华为云 live 数据, 结构体数据
+    // hwData := 
+    // HaiweiAPI()
 
     // 获取腾讯云 live 数据
-    TencentAPI()
+    // TencentAPI()
 
     // 模拟获取数据（可以根据实际场景替换为真实数据来源）
     data := []struct {
