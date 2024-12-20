@@ -64,11 +64,7 @@ func (h *Haiweicloud) GetStreamFrameRate(domain, appName, streamName string) (*l
 	currentTime := time.Now().UTC()
 	startTime := currentTime.Add(-1 * time.Minute)
 	startTimeRequest := startTime.Format("2006-01-02T15:04:05Z")
-	// endTimeRequest := currentTime.Format("2006-01-02T15:04:05Z")
-	// startTimeRequest = "2024-12-19T09:11:00Z"
-	// endTimeRequest = "2024-12-19T09:11:38Z"
 	request.StartTime = &startTimeRequest
-	// request.EndTime = &endTimeRequest
 	response, err := client.ListSingleStreamFramerate(request)
 	return response, err
 }
@@ -102,13 +98,9 @@ func (h *Haiweicloud) GetStreamBitRate(domain, appName, streamName string) (*liv
 	request.App = appName
 	request.Stream = streamName
 	currentTime := time.Now().UTC()
-	beforeTime := currentTime.Add(-1 * time.Minute)
-	startTimeRequest := beforeTime.Format("2006-01-02T15:04:05Z")
-	endTimeRequest := currentTime.Format("2006-01-02T15:04:05Z")
-	// startTimeRequest = "2024-12-19T09:11:00Z"
-	// endTimeRequest = "2024-12-19T09:11:38Z"
+	startTime := currentTime.Add(-1 * time.Minute)
+	startTimeRequest := startTime.Format("2006-01-02T15:04:05Z")
 	request.StartTime = &startTimeRequest
-	request.EndTime = &endTimeRequest
 	response, err := client.ListSingleStreamBitrate(request)
 	return response, err
 }
