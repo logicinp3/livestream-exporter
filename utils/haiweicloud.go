@@ -4,8 +4,9 @@ import (
 	"fmt"
 	"github.com/huaweicloud/huaweicloud-sdk-go-v3/core/auth/basic"
 	live "github.com/huaweicloud/huaweicloud-sdk-go-v3/services/live/v2"
-	"github.com/huaweicloud/huaweicloud-sdk-go-v3/services/live/v2/model"
-	region "github.com/huaweicloud/huaweicloud-sdk-go-v3/services/live/v2/region"
+	liveModel "github.com/huaweicloud/huaweicloud-sdk-go-v3/services/live/v2/model"
+	liveRegion "github.com/huaweicloud/huaweicloud-sdk-go-v3/services/live/v2/region"
+	"time"
 )
 
 const (
@@ -32,23 +33,82 @@ func NewHaiweicloud(ak, sk, projectId string) *Haiweicloud {
 // 	fmt.Println("here is get stream frame rate data...")
 // }
 
-func (h *Haiweicloud) GetStreamFrameRate() (*model.ListSingleStreamFramerateResponse, error) {
+func (h *Haiweicloud) GetStreamFrameRate(domain, appName, streamName string) (*liveModel.ListSingleStreamFramerateResponse, error) {
 	auth, err := basic.NewCredentialsBuilder().
 		WithAk(h.ak).
 		WithSk(h.sk).
 		WithProjectId(h.ProjectId).
 		SafeBuild()
 	if err != nil {
-		fmt.Printf("Failed to init haiweicloud : %v", err)
+		fmt.Printf("Failed to init credential: %v\n", err)
 	}
 
-	client := live.NewLiveClient(
-		live.LiveClientBuilder().
-			WithRegion(region.ValueOf(SigaporeRegion)).
-			WithCredential(auth).
-			Build())
+	region, err := liveRegion.SafeValueOf(SigaporeRegion)
+	if err != nil {
+		fmt.Printf("Failed to get region info: %v\n", err)
+	}
 
-	request := &model.ListSingleStreamFramerateRequest{}
+	hcClient, err := live.LiveClientBuilder().
+		WithRegion(region).
+		WithCredential(auth).
+		SafeBuild()
+	if err != nil {
+		fmt.Printf("Failed to init client: %v\n", err)
+	}
+	client := live.NewLiveClient(hcClient)
+
+	request := &liveModel.ListSingleStreamFramerateRequest{}
+	request.Domain = domain
+	request.App = appName
+	request.Stream = streamName
+	currentTime := time.Now().UTC()
+	startTime := currentTime.Add(-1 * time.Minute)
+	startTimeRequest := startTime.Format("2006-01-02T15:04:05Z")
+	// endTimeRequest := currentTime.Format("2006-01-02T15:04:05Z")
+	// startTimeRequest = "2024-12-19T09:11:00Z"
+	// endTimeRequest = "2024-12-19T09:11:38Z"
+	request.StartTime = &startTimeRequest
+	// request.EndTime = &endTimeRequest
 	response, err := client.ListSingleStreamFramerate(request)
+	return response, err
+}
+
+func (h *Haiweicloud) GetStreamBitRate(domain, appName, streamName string) (*liveModel.ListSingleStreamBitrateResponse, error) {
+	auth, err := basic.NewCredentialsBuilder().
+		WithAk(h.ak).
+		WithSk(h.sk).
+		WithProjectId(h.ProjectId).
+		SafeBuild()
+	if err != nil {
+		fmt.Printf("Failed to init credential: %v\n", err)
+	}
+
+	region, err := liveRegion.SafeValueOf(SigaporeRegion)
+	if err != nil {
+		fmt.Printf("Failed to get region info: %v\n", err)
+	}
+
+	hcClient, err := live.LiveClientBuilder().
+		WithRegion(region).
+		WithCredential(auth).
+		SafeBuild()
+	if err != nil {
+		fmt.Printf("Failed to init client: %v\n", err)
+	}
+	client := live.NewLiveClient(hcClient)
+
+	request := &liveModel.ListSingleStreamBitrateRequest{}
+	request.Domain = domain
+	request.App = appName
+	request.Stream = streamName
+	currentTime := time.Now().UTC()
+	beforeTime := currentTime.Add(-1 * time.Minute)
+	startTimeRequest := beforeTime.Format("2006-01-02T15:04:05Z")
+	endTimeRequest := currentTime.Format("2006-01-02T15:04:05Z")
+	// startTimeRequest = "2024-12-19T09:11:00Z"
+	// endTimeRequest = "2024-12-19T09:11:38Z"
+	request.StartTime = &startTimeRequest
+	request.EndTime = &endTimeRequest
+	response, err := client.ListSingleStreamBitrate(request)
 	return response, err
 }
