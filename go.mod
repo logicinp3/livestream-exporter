@@ -1,10 +1,10 @@
-module live-supplier-exporter
+module livestream-exporter
 
-go 1.23.1
+go 1.23.3
 
 require (
-	github.com/fsnotify/fsnotify v1.7.0
-	github.com/huaweicloud/huaweicloud-sdk-go-v3 v0.1.124
+	github.com/fsnotify/fsnotify v1.8.0
+	github.com/huaweicloud/huaweicloud-sdk-go-v3 v0.1.132
 	github.com/prometheus/client_golang v1.20.5
 	github.com/spf13/viper v1.19.0
 )

@@ -1,7 +1,12 @@
 package utils
 
 import (
+	"fmt"
+	"log"
+	"strings"
 	"sync"
+
+	"livestream-exporter/config"
 
 	"github.com/prometheus/client_golang/prometheus"
 )
@@ -17,8 +22,9 @@ type LiveCollector struct {
 func NewLiveCollector() *LiveCollector {
 	// Metrics Label
 	//
-	// @supplier: "hw" "tc"
+	// @provider: "hw" "tc"
 	// @project: "g04" "g13" "g16" "g20" "g23" "g31"
+	// @streamUrl: "push.com/app/stream"
 	//
 	return &LiveCollector{
 		framerateMetric: prometheus.NewGaugeVec(
@@ -27,8 +33,9 @@ func NewLiveCollector() *LiveCollector {
 				Help: "CloudPlatform framerate metrics",
 			},
 			[]string{
-				"supplier",
+				"provider",
 				"project",
+				"streamUrl",
 			},
 		),
 		bitrateMetric: prometheus.NewGaugeVec(
@@ -37,47 +44,116 @@ func NewLiveCollector() *LiveCollector {
 				Help: "CloudPlatform bitrate metrics",
 			},
 			[]string{
-				"supplier",
+				"provider",
 				"project",
+				"streamUrl",
 			},
 		),
 	}
 }
 
-// Describe 方法用于描述指标
+// Ddescribe metrics
 func (l *LiveCollector) Describe(ch chan<- *prometheus.Desc) {
 	l.framerateMetric.Describe(ch)
 	l.bitrateMetric.Describe(ch)
 }
 
-// Collect 方法用于收集数据并更新指标值
+// collect all metrics data
 func (l *LiveCollector) Collect(ch chan<- prometheus.Metric) {
 	l.mu.Lock()
 	defer l.mu.Unlock()
 
-	// 获取华为云 live 数据, 结构体数据
-	// hwData :=
-	// HaiweiAPI()
+	// loads config file
+	if err := config.LoadConfig(); err != nil {
+		log.Fatalf("Error loading config: %s", err)
+	}
+	// goroutine for watches config file
+	go config.WatchConfig()
+	// get config
+	hwProviders := config.AppConfig.Haiwei
+	// tcProviders := config.AppConfig.Tencent
 
-	// 获取腾讯云 live 数据
-	// TencentAPI()
-
-	// 模拟获取数据（可以根据实际场景替换为真实数据来源）
-	data := []struct {
-		supplier  string
+	// metric data struct
+	type MetricsData struct {
+		// provider  string
 		project   string
 		framerate float64
 		bitrate   float64
-	}{
-		{"hw", "g31", 30.0, 10.11},
-		{"tc", "g13", 40.0, 20.11},
-		{"tc", "g20", 28.5, 12.34},
+		streamUrl string
 	}
+	hwDataSlice := make([]MetricsData, 0)
+	tcDataSlice := make([]MetricsData, 0)
 
-	// 动态设置每个 supplier 和 project 标签的指标数据
-	for _, entry := range data {
-		l.framerateMetric.WithLabelValues(entry.supplier, entry.project).Set(entry.framerate)
-		l.bitrateMetric.WithLabelValues(entry.supplier, entry.project).Set(entry.bitrate)
+	// loop haiwei provider
+	for project, provider := range hwProviders {
+		hwCloud := NewHaiweicloud(provider.AK, provider.SK, provider.ProjectID)
+
+		// loop push stream list
+		for _, stream := range provider.PushStreamList {
+			streamSlice := strings.Split(stream, "/")
+			// init data struct
+			var data MetricsData
+			data.project = project
+			data.streamUrl = stream
+			// getStreamFrameRate
+			frameRes, err := hwCloud.GetStreamFrameRate(streamSlice[0], streamSlice[1], streamSlice[2])
+			if err != nil {
+				fmt.Printf("Failed to get hw stream framerate data: %v", err)
+				data.framerate = float64(0)
+			} else {
+				framerateInfoList := *frameRes.FramerateInfoList
+				dataList := func() []int64 {
+					if len(*&framerateInfoList) > 0 {
+						return *(framerateInfoList)[0].DataList
+					}
+					return nil
+				}()
+				firstElement := func() int64 {
+					if dataList != nil {
+						return dataList[0]
+					}
+					return 0
+				}()
+				data.framerate = float64(firstElement)
+			}
+			// getStreamBitRate
+			bitRes, err := hwCloud.GetStreamBitRate(streamSlice[0], streamSlice[1], streamSlice[2])
+			if err != nil {
+				fmt.Printf("Failed to get hw stream bitrate data: %v", err)
+				data.bitrate = float64(0)
+			} else {
+				bitrateInfoList := *bitRes.BitrateInfoList
+				dataList := func() []int64 {
+					if len(*&bitrateInfoList) > 0 {
+						return *(bitrateInfoList)[0].DataList
+					}
+					return nil
+				}()
+				firstElement := func() int64 {
+					if dataList != nil {
+						return dataList[0]
+					}
+					return 0
+				}()
+				data.bitrate = float64(firstElement)
+			}
+			hwDataSlice = append(hwDataSlice, data)
+		}
+	}
+	fmt.Println(hwDataSlice)
+
+	// loop tecent provider
+	tcDataSlice = append(tcDataSlice, MetricsData{"g33", 11, 111, "hw-01-push.g33-video.com/rb01/a-12"})
+	tcDataSlice = append(tcDataSlice, MetricsData{"g33", 22, 222, "hw-01-push.g33-video.com/rb01/h-5"})
+
+	// write metrics data
+	for _, v := range hwDataSlice {
+		l.framerateMetric.WithLabelValues("hw", v.project, v.streamUrl).Set(v.framerate)
+		l.bitrateMetric.WithLabelValues("hw", v.project, v.streamUrl).Set(v.bitrate)
+	}
+	for _, v := range tcDataSlice {
+		l.framerateMetric.WithLabelValues("tc", v.project, v.streamUrl).Set(v.framerate)
+		l.bitrateMetric.WithLabelValues("tc", v.project, v.streamUrl).Set(v.bitrate)
 	}
 
 	// send metrics to channel

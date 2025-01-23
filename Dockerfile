@@ -9,12 +9,12 @@ RUN go mod download
 
 # Copy the source code. Note the slash at the end, as explained in
 # https://docs.docker.com/reference/dockerfile/#copy
-COPY *.go ./
+COPY . .
 
 # Build
-RUN CGO_ENABLED=0 GOOS=linux go build -o /live-supplier-exporter .
+RUN CGO_ENABLED=0 GOOS=linux go build -o ./livestream-exporter .
 
-EXPOSE 9097
+EXPOSE 8080
 
 # Run
-CMD ["/live-supplier-exporter"]
+CMD ["/app/livestream-exporter"]

@@ -1,0 +1,14 @@
+haiwei:
+  provider:
+    ak: xxx
+    sk: xxx
+    projectID: xxx
+    pushStreamList:
+      - hw.com/appName/streamName
+
+tencent:
+  provider:
+    ak: xxx
+    sk: xxx
+    pushStreamList:
+      - tc.com/appName/streamName

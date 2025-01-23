@@ -48,6 +48,7 @@ func (h *Haiweicloud) GetStreamFrameRate(domain, appName, streamName string) (*l
 		fmt.Printf("Failed to get region info: %v\n", err)
 	}
 
+    // build client
 	hcClient, err := live.LiveClientBuilder().
 		WithRegion(region).
 		WithCredential(auth).
@@ -57,14 +58,16 @@ func (h *Haiweicloud) GetStreamFrameRate(domain, appName, streamName string) (*l
 	}
 	client := live.NewLiveClient(hcClient)
 
-	request := &liveModel.ListSingleStreamFramerateRequest{}
-	request.Domain = domain
-	request.App = appName
-	request.Stream = streamName
+    // build request
 	currentTime := time.Now().UTC()
 	startTime := currentTime.Add(-1 * time.Minute)
 	startTimeRequest := startTime.Format("2006-01-02T15:04:05Z")
-	request.StartTime = &startTimeRequest
+	request := &liveModel.ListSingleStreamFramerateRequest{
+        Domain: domain,
+        App: appName,
+        Stream: streamName,
+        StartTime: &startTimeRequest,
+    }
 	response, err := client.ListSingleStreamFramerate(request)
 	return response, err
 }
@@ -84,6 +87,7 @@ func (h *Haiweicloud) GetStreamBitRate(domain, appName, streamName string) (*liv
 		fmt.Printf("Failed to get region info: %v\n", err)
 	}
 
+    // build client
 	hcClient, err := live.LiveClientBuilder().
 		WithRegion(region).
 		WithCredential(auth).
@@ -93,14 +97,16 @@ func (h *Haiweicloud) GetStreamBitRate(domain, appName, streamName string) (*liv
 	}
 	client := live.NewLiveClient(hcClient)
 
-	request := &liveModel.ListSingleStreamBitrateRequest{}
-	request.Domain = domain
-	request.App = appName
-	request.Stream = streamName
+    // build request
 	currentTime := time.Now().UTC()
 	startTime := currentTime.Add(-1 * time.Minute)
 	startTimeRequest := startTime.Format("2006-01-02T15:04:05Z")
-	request.StartTime = &startTimeRequest
+	request := &liveModel.ListSingleStreamBitrateRequest{
+        Domain: domain,
+        App: appName,
+        Stream: streamName,
+        StartTime: &startTimeRequest,
+    }
 	response, err := client.ListSingleStreamBitrate(request)
 	return response, err
 }

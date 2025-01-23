@@ -7,20 +7,16 @@ import (
 	"github.com/spf13/viper"
 )
 
-type Credentials struct {
-	AK string `mapstructure:"ak"`
-	SK string `mapstructure:"sk"`
-	PID string `mapstructure:"pid"`
-}
-
 type Provider struct {
-	G23 Credentials `mapstructure:"g23"`
-	G31 Credentials `mapstructure:"g31"`
+	AK         string
+	SK         string
+	ProjectID  string
+	PushStreamList []string
 }
 
 type Config struct {
-	Haiwei Provider `mapstructure:"haiwei"`
-	Tencent Provider `mapstructure:"tencent"`
+    Haiwei  map[string]Provider
+	Tencent map[string]Provider
 }
 
 var AppConfig Config
