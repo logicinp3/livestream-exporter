@@ -1,4 +1,4 @@
 ## Debug
 ```bash
-go run main.go collector.go
+go run main.go
 ```

@@ -1,20 +1,15 @@
-FROM golang:1.23
-
-# Set destination for COPY
+# Build stage
+FROM golang:1.23 AS builder
 WORKDIR /app
-
-# Download Go modules
 COPY go.mod go.sum ./
 RUN go mod download
-
-# Copy the source code. Note the slash at the end, as explained in
-# https://docs.docker.com/reference/dockerfile/#copy
 COPY . .
+RUN CGO_ENABLED=0 GOOS=linux go build -o livestream-exporter .
 
-# Build
-RUN CGO_ENABLED=0 GOOS=linux go build -o ./livestream-exporter .
-
-EXPOSE 8080
-
-# Run
+# Runtime stage
+FROM alpine:latest
+WORKDIR /app
+COPY --from=builder /app/livestream-exporter .
+ARG APP_PORT=8080
+EXPOSE ${APP_PORT}
 CMD ["/app/livestream-exporter"]
