@@ -23,8 +23,8 @@ func NewLiveCollector() *LiveCollector {
 	// Metrics Label
 	//
 	// @provider: "hw" "tc"
-	// @project: "g04" "g13" "g16" "g20" "g23" "g31"
-	// @streamUrl: "push.com/app/stream"
+	// @project: "project1" "project2"
+	// @streamUrl: "xx-push.live.com/app/stream"
 	//
 	return &LiveCollector{
 		framerateMetric: prometheus.NewGaugeVec(
@@ -143,8 +143,7 @@ func (l *LiveCollector) Collect(ch chan<- prometheus.Metric) {
 	fmt.Println(hwDataSlice)
 
 	// loop tecent provider
-	tcDataSlice = append(tcDataSlice, MetricsData{"g33", 11, 111, "hw-01-push.g33-video.com/rb01/a-12"})
-	tcDataSlice = append(tcDataSlice, MetricsData{"g33", 22, 222, "hw-01-push.g33-video.com/rb01/h-5"})
+	tcDataSlice = append(tcDataSlice, MetricsData{"g33", 30.0, 1024.11, "tc-push.live.com/app01/h-5"})
 
 	// write metrics data
 	for _, v := range hwDataSlice {
