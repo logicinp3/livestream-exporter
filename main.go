@@ -13,7 +13,7 @@ import (
 
 func main() {
 	// Health check
-	http.HandleFunc("/ping", func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
 		log.Println("livestream-exporter is health.")
 		w.Header().Set("Content-Type", "application/json")
 		response := map[string]bool{"up": true}
