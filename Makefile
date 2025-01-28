@@ -1,40 +1,40 @@
-APP_NAME = livestream-exporter
-APP_VERSION = v1
-APP_PORT = 8080
-CONTAINER_TOOL := $(shell command -v podman 2> /dev/null || command -v docker 2> /dev/null || echo "none")
-CONTAINER_REGISTRY_DOMAIN = harbor.slleisure.com
-CONTAINER_REGISTRY_PROJECT = devops
-CONTAINER_IMAGE = ${CONTAINER_REGISTRY_DOMAIN}/${CONTAINER_REGISTRY_PROJECT}/${APP_NAME}:${APP_VERSION}
+APP_NAME := livestream-exporter
+APP_VERSION ?= v1
+APP_PORT ?= 8080
+CONTAINER_COMMAND := $(shell command -v podman 2> /dev/null || command -v docker 2> /dev/null || echo "none")
+REGISTRY_DOMAIN ?= docker.io
+REGISTRY_PROJECT ?= project
+CONTAINER_IMAGE = ${REGISTRY_DOMAIN}/${REGISTRY_PROJECT}/${APP_NAME}:${APP_VERSION}
 
 # check container runtime
-ifeq ($(CONTAINER_TOOL),none)
-    $(error "podman or docker command not found!")
+ifeq ($(CONTAINER_COMMAND),none)
+    $(error "Command <podman> or <docker> not found!")
 endif
 
-
 .PHONY: all build push test
-all: image clean  ## build, push image and clean
+all: build push clean  ## build, push, clean
 
-#test: build run clean  ## build, run image and clean
-test:
+test: build run clean  ## build, run, clean
 	@echo "Testing..."
+	@echo $(REGISTRY_DOMAIN)
+	@echo $(REGISTRY_PROJECT)
 
-build:
+build:  ## build image
 	@echo "Building image"
-	${CONTAINER_TOOL} build --build-arg APP_PORT=${APP_PORT} -t ${CONTAINER_IMAGE} .
+	${CONTAINER_COMMAND} build --build-arg APP_PORT=${APP_PORT} -t ${CONTAINER_IMAGE} .
 
-push:
+push:  ## push image
 	@echo "Pushing image to registry"
-	${CONTAINER_TOOL} push ${CONTAINER_IMAGE}
+	${CONTAINER_COMMAND} push ${CONTAINER_IMAGE}
 
-clean:
+clean:  ## clean image
 	@echo "Cleaning up"
-	${CONTAINER_TOOL} image prune || true;\
-	${CONTAINER_TOOL} rmi ${CONTAINER_IMAGE} || true
+	${CONTAINER_COMMAND} image prune --force || true;\
+	${CONTAINER_COMMAND} rmi ${CONTAINER_IMAGE} --force || true
 
-run:
+run:  ## run container
 	@echo "Running container"
-	${CONTAINER_TOOL} run -p ${APP_PORT}:${APP_PORT} ${CONTAINER_IMAGE}
+	${CONTAINER_COMMAND} run -p ${APP_PORT}:${APP_PORT} ${CONTAINER_IMAGE}
 
 .PHONY: help
 help:
