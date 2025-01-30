@@ -16,6 +16,7 @@ spec:
     spec:
       containers:
         - image: logic.com/your-project/livestream-exporter:tag
+          imagePullPolicy: Always
           name: livestream-exporter
           ports:
             - containerPort: 8080
@@ -30,6 +31,10 @@ spec:
             - name: config-volume
               mountPath: /app/config/config.yaml
               subPath: config.yaml
+      imagePullSecrets:
+        - name: ops-harbor-login-secret
+      nodeSelector:
+        tier: app
       volumes:
         - name: config-volume
           secret:

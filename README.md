@@ -39,6 +39,6 @@ make
 
 # run in k8s
 sed -i "/image/ s/tag/$APP_VERSION/" ./kustomize/deployment.yaml
-kubectl create secret generic livestream-exporter --from-file=./config/config.yaml
+mv ./config/config.yaml.example ./config/config.yaml && kubectl create secret generic livestream-exporter --from-file=./config/config.yaml
 kubectl apply -k ./kustomize/
 ```
