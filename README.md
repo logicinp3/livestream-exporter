@@ -38,7 +38,7 @@ export REGISTRY_PROJECT=project_var
 make
 
 # run in k8s
-sed -i "/image/ s/tag/$APP_VERSION/" ./kustomize/deployment.yaml
+sed -i "s#image:.*#image: $REGISTRY_DOMAIN/$REGISTRY_PROJECT/livestream-exporter:$APP_VERSION#" ./kustomize/deployment.yaml
 mv ./config/config.yaml.example ./config/config.yaml && kubectl create secret generic livestream-exporter --from-file=./config/config.yaml
 kubectl apply -k ./kustomize/
 ```
