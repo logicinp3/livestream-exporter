@@ -13,10 +13,19 @@ cd livestream-exporter
 ### debug
 
 ```bash
+mv ./config/config.yaml.example ./config/config.yaml
+
+# run in src
 go run main.go
+
+# run in k8s
+kubectl create secret generic livestream-exporter --from-file=./config/config.yaml
+kubectl create deployment livestream-exporter --image=${REGISTRY_DOMAIN}/${REGISTRY_PROJECT}/livestream-exporter:${APP_VERSION} --replicas=1
+kubectl patch deployment livestream-exporter -p '{"spec": {"template": {"spec": {"imagePullSecrets": [{"name": "harbor-secret"}]}}}}'
+kubectl patch deployment livestream-exporter --type='json' -p='[{"op": "add", "path": "/spec/template/spec/volumes", "value": [{"name": "config-volume", "secret": {"secretName": "livestream-exporter", "items": [{"key": "config.yaml", "path": "config.yaml"}]}}]}, {"op": "add", "path": "/spec/template/spec/containers/0/volumeMounts", "value": [{"name": "config-volume", "mountPath": "/app/config/config.yaml", "subPath": "config.yaml"}]}]'
 ```
 
-### build and run
+### deploy
 
 ```bash
 # set environment
@@ -28,11 +37,8 @@ export REGISTRY_PROJECT=project_var
 # build image
 make
 
-# run on k8s
-cp ./config/config.yaml.example ./config/config.yaml
-kubectl create configmap livestream-exporter --from-file=./config/config.yaml
-kubectl create deployment livestream-exporter --image=${REGISTRY_DOMAIN}/${REGISTRY_PROJECT}/livestream-exporter:${APP_VERSION} -r 1
-# patch configmap and volume
-kubectl patch deployments livestream-exporter -p '{"spec": {"template": {"spec": {"imagePullSecrets": [{"name": "harbor-secret"}]}}}}'
-kubectl patch deployment livestream-exporter --type='json' -p='[{"op": "add", "path": "/spec/template/spec/volumes", "value": [{"name": "livestream-exporter", "configMap": {"name": "livestream-exporter", "items": [{"key": "config.yaml", "path": "config.yaml"}]}}]}, {"op": "add", "path": "/spec/template/spec/containers/0/volumeMounts", "value": [{"name": "livestream-exporter", "mountPath": "/app/config/config.yaml", "subPath": "config.yaml"}]}]'
+# run in k8s
+sed -i "/image/ s/tag/$APP_VERSION/" ./kustomize/deployment.yaml
+kubectl create secret generic livestream-exporter --from-file=./config/config.yaml
+kubectl apply -k ./kustomize/
 ```
